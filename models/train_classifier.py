@@ -18,6 +18,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
+from sklearn.base import BaseEstimator, TransformerMixin
 import timeit
 import pickle
 
@@ -40,21 +41,66 @@ def tokenize(text):
     clean_tokens = [lemmatizer.lemmatize(tok,pos='v') for tok in tokens]
     return clean_tokens
 
+# Custom feature1: Number of words in sentence
+class WordCount(BaseEstimator, TransformerMixin):
+    def word_counts(self, text):
+        words = word_tokenize(text.lower().strip())
+        return len(words)
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x):
+        count = pd.Series(x).apply(self.word_counts)
+        return pd.DataFrame(count)
+
+# Custome feature2: Number of noun in Sentence
+class NounCount(BaseEstimator, TransformerMixin):
+    def noun_counts(self,text):
+        count = 0
+        pos_tags = nltk.pos_tag(word_tokenize(text.lower().strip()))
+        for token, tag in pos_tags:
+            if tag in ['PRP', 'NN']:
+                count += 1
+        return count
+
+    def fit(self, x, y=None):
+        return self
+
+    def transform(self, x):
+        count = pd.Series(x).apply(self.noun_counts)
+        return pd.DataFrame(count)
 
 def build_model():
     pipeline = Pipeline([
-        ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        ('features', FeatureUnion([
+            #text pipeline
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+
+            #additional custom features
+            ('word_count', WordCount()),
+            ('noun_count', NounCount())
+        ])),
+
+        ('clf',MultiOutputClassifier(RandomForestClassifier()))
     ])
 
     parameters = {
-        'clf__estimator__n_estimators': [50,100,200],
-        'clf__estimator__min_samples_split': [2,3,4]
-        ''
+    'features__text_pipeline__vect__max_df': [1, 0.75],
+    'features__text_pipeline__vect__max_features':[None, 5000],
+    'features__text_pipeline__tfidf__use_idf': [False, True],
+    'features__vect__ngram_range': [(1,1),(1,2)],
+    'clf__estimator__n_estimators': [10,100],
+    'clf__estimator__min_samples_split': [2,10],
+    'features__transformer_weights':(
+        {'text_pipeline':1, 'word_count':0.5, 'noun_count':0.5},
+        {'text_pipeline':0.8, 'word_count':1, 'noun_count':1})
     }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters, verbose=12)
+    cv = GridSearchCV(pipeline, param_grid=parameters, cv=3, verbose=12, n_jobs=-1)
 
     return cv
 
@@ -66,14 +112,13 @@ def evaluate_model(model, X_test, Y_test, category_names):
         print("Classification report of {}".format(name))
         print(classification_report(Y_test[name],Y_pred[:,i]))
 
-
-def evaluate_f1(Y_test, Y_pred):
     results_dict = {}
     for i,col in enumerate(Y_test.columns):
         results_dict[col] = f1_score(Y_test[col],Y_pred[:,i],average='micro')
     df_eva = pd.DataFrame([results_dict],index=['f1_score']).T
-    return df_eva
-
+    print("The average f1-score is {}".format(df_eva.mean()))
+    print("The 5 lowest f1-score are: ")
+    return df_eva.sort_values('f1_score').head()
 
 def save_model(model, model_filepath):
     pickle.dump(model, open(model_filepath, 'wb'))

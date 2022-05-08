@@ -57,6 +57,7 @@ It is important for aid organization to identify the emergent needs at the groun
 Text processing and feature extraction was undertaken for machine learning. [Random Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html) was selected for machine learning classifier.
 
 Without tuning, the model's average f1-score is 0.943094 and the 5 lowest f1-scores among categories are as follows:
+
 ![this is an image](/images/f1_ml1.png)
 
 To improve the model, the following 5 parameters were tested by GridSearchCV:
@@ -70,12 +71,13 @@ To improve the model, the following 5 parameters were tested by GridSearchCV:
   - n_estimators: [100,200]
   - min_samples_split: [2,10]
 
+Furthermore, the following additional features were also tested:
+- Number of words in Sentence
+- Number of Nouns in Sentence
+
 After tuning, the model predicted as follows:
 
 The best parameters for the above parameters combination were:
 
-
-
 ### 4.3 Web App <a name="app"></a>
-
-## 5. Licensing, Authors, Acknowledgements<a name="licensing"></a>
+In the deployed app, users can input a new message and get relevant classification results in several categories as well as see the data visualization of 1)distribution by genre types and correlation of Occurrences among message types.
