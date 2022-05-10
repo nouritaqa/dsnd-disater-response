@@ -23,8 +23,23 @@ import timeit
 import pickle
 
 def load_data(database_filepath):
+    '''
+    load_data
+    Load data from SQL database to a pandas dataframe.
+    Data on messages is loaded as X and categories as Y.
+
+    Input:
+    database_filepath   filepath to SQL database
+
+    Output:
+    X      pandas DataFrame of message data
+    Y      pandas DataFrame of categories data
+    '''
+    #loada data from sql database
     engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql('SELECT * FROM DisasterResponse', engine)
+
+    #split into X and Y.
     X = df.message
     X_genre = pd.get_dummies(df.genre, drop_first=True)
     Y = df.iloc[:,4:]
@@ -33,6 +48,16 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    '''
+    tokenize
+    Text processing with tokenization, stopwords removal, stem/lemmatization
+
+    Input:
+    text            pandas dataframe of text messages
+
+    Output:
+    clean_tokens    pandas dataframe of tokenized text messages
+    '''
     tokens = word_tokenize(text.lower().strip())
     tokens = [w for w in tokens if w not in stopwords.words('english')]
 
@@ -72,6 +97,13 @@ class NounCount(BaseEstimator, TransformerMixin):
         return pd.DataFrame(count)
 
 def build_model():
+    '''
+    build_model
+    - Machine Learning pipeline to build the prediction model of categoreis from tokenized text with GridSearchCV model tuning
+
+    Output:
+    cv      Tuned model with GridSearchCV
+    '''
     pipeline = Pipeline([
         ('features', FeatureUnion([
             #text pipeline
@@ -106,6 +138,16 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    '''
+    evaluate_model
+    Printout the best parameters from tuning, classification report of each category, average f1-score and 5 lowest f1-scores.
+
+    Inputs:
+    model           trained model (GridSearchCV)
+    X_test          test subset for X arrays
+    Y_test          test subset for Y arrays
+    category_names  name of category for each Y column
+    '''
     Y_pred = model.predict(X_test)
     print("Best Parameters:", model.best_params_)
     for i,name in enumerate(category_names):
@@ -121,6 +163,17 @@ def evaluate_model(model, X_test, Y_test, category_names):
     return df_eva.sort_values('f1_score').head()
 
 def save_model(model, model_filepath):
+    '''
+    save_model
+    Save the trained model into model_filepath
+
+    Inputs:
+    model           trained model
+    model_filepath  filepath to save the trained model
+
+    Output:
+    pickle file named model_filepath
+    '''
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
