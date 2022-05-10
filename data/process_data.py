@@ -44,7 +44,8 @@ def load_data(messages_filepath, categories_filepath):
 def clean_data(df):
     '''
     clean_data
-    Remove the duplicated rows from pandas dataframe
+    - Remove the duplicated rows from pandas dataframe
+    - Conver values of related column to binary
 
     Input:
     df      pandas dataframe
@@ -55,6 +56,9 @@ def clean_data(df):
     '''
     #drop duplicates
     df.drop_duplicates(inplace=True)
+
+    #rel
+    df.loc[(df_merged.related == 2), 'related'] = 1
     return df
 
 
