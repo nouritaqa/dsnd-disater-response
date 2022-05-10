@@ -19,7 +19,9 @@
 3. Go to http://0.0.0.0:3001/
 
 ## 2. Project Objectives <a name='objectives'></a>
-The project main objective is to build the machine learning model to classify disaster message data from [Figture Eight](https://appen.com), and deploy the web app, where an potential emergency worker can input a new message and get relevant classification results in several categories as well as see the data visualization of original dataset.
+The project main objective is to build the machine learning model to classify disaster message data from [Figture Eight](https://appen.com), and deploy the web app, where an potential aid worker can input a new message and get relevant classification results in several categories as well as see the data visualization of original dataset.
+
+The application will help aid workers to systematically identify emergent needs and their types in an event of disaster without manually going through messages and news. This will unburden these workers of inefficient needs identification process and support them in focusing their efforts in delivering the needed support. 
 
 The project consists of the following components:
 1. ETL Pipeline - Load and clean data, and the store the data in a SQLite database.
