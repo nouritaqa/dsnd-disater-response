@@ -75,8 +75,15 @@ After tuning, the model predicted as follows:
 - average f1-score: 0.949392 (5.33% improved)
 - 5 lowest f1-scores
 
+![this is an image](/images/f1_ml2.png)
+
 The prediction of aid_related category has improved 5.2% as well. The best parameters for the above parameters combination were:
-{'clf__estimator__min_samples_split': 2, 'clf__estimator__n_estimators': 100, 'features__text_pipeline__tfidf__use_idf': False, 'features__text_pipeline__vect__max_df': 0.75, 'features__text_pipeline__vect__max_features': 5000, 'features__transformer_weights': {'text_pipeline': 1, 'word_count': 0.5, 'noun_count': 0.5}}
+- clf__estimator__min_samples_split: 2
+- clf__estimator__n_estimators': 100
+- features__text_pipeline__tfidf__use_idf': False
+- features__text_pipeline__vect__max_df': 0.75
+- features__text_pipeline__vect__max_features': 5000
+- features__transformer_weights': {'text_pipeline': 1, 'word_count': 0.5, 'noun_count': 0.5}}
 
 ### 4.3 Web App <a name="app"></a>
 In the deployed app, users can input a new message and get relevant classification results in several categories as well as see the data visualization of 1)distribution by genre types and correlation of Occurrences among message types.
